@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wild cards — embed preview (v3)</title>
+<title>Wild cards — embed preview (expanding cards)</title>
 <style>
-  body { margin: 0; background: #fafaf7; }
+  body { margin: 0; background: transparent; }
   .preview-frame { max-width: 1180px; margin: 0 auto; padding: 40px 24px; }
 </style>
 </head>
@@ -13,206 +13,294 @@
 <div class="preview-frame">
 
 <!-- ============================================================ -->
-<!--  START WILD CARDS EMBED — copy everything between these       -->
-<!--  comments and paste into your CMS or page template.           -->
+<!--  START WILD CARDS EMBED (EXPANDING CARDS) — copy everything   -->
+<!--  between these comments and paste into your CMS/page.         -->
+<!--  Loads DM Sans from Google Fonts; vanilla JS at the bottom.   -->
 <!-- ============================================================ -->
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+
 <style>
-  .wc-wildcards { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: #1a1a1a; line-height: 1.55; -webkit-font-smoothing: antialiased; }
-  .wc-wildcards *, .wc-wildcards *::before, .wc-wildcards *::after { box-sizing: border-box; }
-  .wc-wildcards .wc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-  .wc-wildcards .wc-card { background: #fff; border: 1px solid #e5e5e0; border-radius: 8px; padding: 28px 28px 24px; display: flex; flex-direction: column; transition: transform 0.15s ease, box-shadow 0.15s ease; margin: 0; }
-  .wc-wildcards .wc-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-  .wc-wildcards .wc-visual { width: 64px; height: 64px; margin-bottom: 20px; display: block; }
-  .wc-wildcards .wc-name { font-family: "Iowan Old Style", "Apple Garamond", "Baskerville", "Times New Roman", Georgia, serif; font-size: 22px; font-weight: 600; line-height: 1.2; margin: 0 0 18px; letter-spacing: -0.005em; color: #1a1a1a; }
-  .wc-wildcards .wc-field { margin-bottom: 14px; }
-  .wc-wildcards .wc-field-label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 10.5px; font-weight: 600; color: #737373; margin-bottom: 4px; }
-  .wc-wildcards .wc-field-body { font-size: 14.5px; color: #262626; line-height: 1.55; }
-  .wc-wildcards .wc-tags-block { margin-top: auto; padding-top: 18px; border-top: 1px solid #f0f0eb; }
-  .wc-wildcards .wc-tags-label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 10.5px; font-weight: 600; color: #737373; margin-bottom: 8px; }
-  .wc-wildcards .wc-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .wc-wildcards .wc-tag { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 999px; background: #f5f5f0; color: #525252; border: 1px solid #e8e8e3; line-height: 1.3; }
-  .wc-wildcards .wc-tag.wc-tag-primary { background: #1a1a1a; color: #fafaf7; border-color: #1a1a1a; }
-  @media (max-width: 600px) { .wc-wildcards .wc-card { padding: 24px 22px 20px; } .wc-wildcards .wc-name { font-size: 20px; } }
+  .wc-cards { font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: #1a1a1a; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wc-cards *, .wc-cards *::before, .wc-cards *::after { box-sizing: border-box; }
+
+  /* 3 across; collapses to 2, then 1 on narrow screens */
+  .wc-cards .wc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: start; }
+  @media (max-width: 900px) { .wc-cards .wc-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .wc-cards .wc-grid { grid-template-columns: 1fr; } }
+
+  .wc-cards .wc-card { background: rgba(243, 233, 220, 0.35); border: 1px solid rgba(52, 71, 66, 0.15); border-radius: 10px; padding: 26px 24px; cursor: pointer; position: relative; transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
+  .wc-cards .wc-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(52, 71, 66, 0.1); }
+  .wc-cards .wc-card:focus-visible { outline: 2px solid #456458; outline-offset: 2px; }
+  .wc-cards .wc-card.is-open { border-color: #112C26; box-shadow: 0 12px 32px rgba(17,44,38,0.10); cursor: default; }
+
+  .wc-cards .wc-visual { width: 56px; height: 56px; margin-bottom: 18px; display: block; }
+  .wc-cards .wc-name { font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 20px; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; color: #112C26; margin: 0; padding-right: 26px; min-height: 2.5em; }
+
+  /* the little +/- affordance, top-right */
+  .wc-cards .wc-toggle { position: absolute; top: 24px; right: 22px; width: 22px; height: 22px; color: #97A67C; transition: transform 0.28s ease, color 0.18s ease; }
+  .wc-cards .wc-card.is-open .wc-toggle { transform: rotate(45deg); color: #112C26; }
+
+  /* collapsed teaser line that fades out when the card opens */
+  .wc-cards .wc-teaser { font-size: 13.5px; color: #8a8a82; margin-top: 14px; transition: opacity 0.18s ease; }
+  .wc-cards .wc-card.is-open .wc-teaser { display: none; }
+
+  /* the expanding region */
+  .wc-cards .wc-panel { overflow: hidden; height: 0; transition: height 0.30s ease; }
+  .wc-cards .wc-panel-inner { padding-top: 18px; }
+  .wc-cards .wc-field { margin-bottom: 14px; }
+  .wc-cards .wc-field-label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 10.5px; font-weight: 600; color: #737373; margin-bottom: 4px; }
+  .wc-cards .wc-field-body { font-size: 14.5px; color: #262626; line-height: 1.55; }
+  .wc-cards .wc-tags-block { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(52, 71, 66, 0.1); }
+  .wc-cards .wc-tags-label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 10.5px; font-weight: 600; color: #737373; margin-bottom: 8px; }
+  .wc-cards .wc-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .wc-cards .wc-tag { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 999px; background: rgba(243, 233, 220, 0.5); color: #525252; border: 1px solid rgba(52, 71, 66, 0.12); line-height: 1.3; }
+  .wc-cards .wc-tag.wc-tag-primary { background: #112C26; color: #fafaf7; border-color: #112C26; }
 </style>
 
-<div class="wc-wildcards">
+<div class="wc-cards">
   <div class="wc-grid">
 
-    <article class="wc-card">
+    <!-- 1. AI-assisted pandemic -->
+    <article class="wc-card" tabindex="0" role="button" aria-expanded="false">
+      <svg class="wc-toggle" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       <svg class="wc-visual" viewBox="0 0 64 64" aria-hidden="true">
-        <circle cx="22" cy="28" r="14" fill="none" stroke="#d97706" stroke-width="1.5"/>
-        <circle cx="42" cy="38" r="10" fill="none" stroke="#d97706" stroke-width="1.5"/>
-        <circle cx="22" cy="28" r="3" fill="#d97706"/>
-        <circle cx="42" cy="38" r="2" fill="#d97706"/>
-        <circle cx="34" cy="20" r="1.5" fill="#d97706"/>
-        <circle cx="14" cy="46" r="1.5" fill="#d97706"/>
-        <circle cx="50" cy="22" r="1.5" fill="#d97706"/>
+        <circle cx="32" cy="32" r="13" fill="none" stroke="#7C3F3D" stroke-width="1.5"/>
+        <circle cx="32" cy="32" r="3" fill="#7C3F3D"/>
+        <g stroke="#7C3F3D" stroke-width="1.5">
+          <line x1="32" y1="19" x2="32" y2="12"/><line x1="32" y1="45" x2="32" y2="52"/>
+          <line x1="19" y1="32" x2="12" y2="32"/><line x1="45" y1="32" x2="52" y2="32"/>
+          <line x1="23" y1="23" x2="18" y2="18"/><line x1="41" y1="41" x2="46" y2="46"/>
+          <line x1="23" y1="41" x2="18" y2="46"/><line x1="41" y1="23" x2="46" y2="18"/>
+        </g>
       </svg>
-      <h3 class="wc-name">AI-assisted pandemic</h3>
-      <div class="wc-field">
-        <div class="wc-field-label">What it is</div>
-        <div class="wc-field-body">A novel pathogen more virulent than COVID emerges, and credible reporting points to AI-assisted research as the proximate cause.</div>
-      </div>
-      <div class="wc-field">
-        <div class="wc-field-label">Why it might happen</div>
-        <div class="wc-field-body">Biosafety guardrails fail to keep pace with frontier capability. A deliberate misuse incident or a research-lab accident becomes the trigger.</div>
-      </div>
-      <div class="wc-tags-block">
-        <div class="wc-tags-label">Most likely scenarios</div>
-        <div class="wc-tags">
-          <span class="wc-tag wc-tag-primary">Coalition AI</span>
-          <span class="wc-tag wc-tag-primary">Big AI</span>
-          <span class="wc-tag wc-tag-primary">Great Power AI</span>
-          <span class="wc-tag wc-tag-primary">Superintelligent AI</span>
-        </div>
-      </div>
+      <h3 class="wc-name">AI-assisted<br>pandemic</h3>
+      <div class="wc-teaser">Click to expand</div>
+      <div class="wc-panel"><div class="wc-panel-inner">
+        <div class="wc-field"><div class="wc-field-label">What it is</div><div class="wc-field-body">A novel pathogen causes a global outbreak more virulent than COVID-19, with credible reports tracing it back to a small ideologically motivated group.</div></div>
+        <div class="wc-field"><div class="wc-field-label">Why it might happen</div><div class="wc-field-body">The barrier to entry for working with dangerous pathogens is collapsing faster than guardrails like biosurveillance and synthesis screening can keep pace.</div></div>
+        <div class="wc-tags-block"><div class="wc-tags-label">Most likely scenarios</div><div class="wc-tags">
+          <span class="wc-tag wc-tag-primary">Coalition AI</span><span class="wc-tag wc-tag-primary">Big AI</span><span class="wc-tag wc-tag-primary">Great Power AI</span><span class="wc-tag wc-tag-primary">Superintelligent AI</span>
+        </div></div>
+      </div></div>
     </article>
 
-    <article class="wc-card">
+    <!-- 2. Public upheaval against AI -->
+    <article class="wc-card" tabindex="0" role="button" aria-expanded="false">
+      <svg class="wc-toggle" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       <svg class="wc-visual" viewBox="0 0 64 64" aria-hidden="true">
-        <line x1="32" y1="32" x2="14" y2="20" stroke="#b91c1c" stroke-width="1.5"/>
-        <line x1="32" y1="32" x2="50" y2="14" stroke="#b91c1c" stroke-width="1.5"/>
-        <line x1="32" y1="32" x2="20" y2="48" stroke="#b91c1c" stroke-width="1.5"/>
-        <line x1="32" y1="32" x2="50" y2="50" stroke="#b91c1c" stroke-width="1.5"/>
-        <line x1="32" y1="32" x2="14" y2="36" stroke="#b91c1c" stroke-width="1.5" opacity="0.6"/>
-        <line x1="32" y1="32" x2="50" y2="30" stroke="#b91c1c" stroke-width="1.5" opacity="0.6"/>
-        <circle cx="32" cy="32" r="4" fill="#b91c1c"/>
+        <line x1="32" y1="32" x2="14" y2="20" stroke="#4E2423" stroke-width="1.5"/>
+        <line x1="32" y1="32" x2="50" y2="14" stroke="#4E2423" stroke-width="1.5"/>
+        <line x1="32" y1="32" x2="20" y2="48" stroke="#4E2423" stroke-width="1.5"/>
+        <line x1="32" y1="32" x2="50" y2="50" stroke="#4E2423" stroke-width="1.5"/>
+        <line x1="32" y1="32" x2="14" y2="36" stroke="#4E2423" stroke-width="1.5" opacity="0.6"/>
+        <line x1="32" y1="32" x2="50" y2="30" stroke="#4E2423" stroke-width="1.5" opacity="0.6"/>
+        <circle cx="32" cy="32" r="4" fill="#4E2423"/>
       </svg>
-      <h3 class="wc-name">Public upheaval against AI</h3>
-      <div class="wc-field">
-        <div class="wc-field-label">What it is</div>
-        <div class="wc-field-body">A serious assassination attempt on a leading AI company executive — the visible peak of mass protest, attacks on infrastructure, and sustained anti-AI mobilisation.</div>
-      </div>
-      <div class="wc-field">
-        <div class="wc-field-label">Why it might happen</div>
-        <div class="wc-field-body">Sustained job displacement, perceived corporate impunity, and a galvanising trigger converge into action that regulation alone has not produced.</div>
-      </div>
-      <div class="wc-tags-block">
-        <div class="wc-tags-label">Most likely scenarios</div>
-        <div class="wc-tags">
-          <span class="wc-tag wc-tag-primary">Coalition AI</span>
-          <span class="wc-tag wc-tag-primary">Big AI</span>
-          <span class="wc-tag wc-tag-primary">Great Power AI</span>
-          <span class="wc-tag wc-tag-primary">Superintelligent AI</span>
-        </div>
-      </div>
+      <h3 class="wc-name">Public upheaval<br>against AI</h3>
+      <div class="wc-teaser">Click to expand</div>
+      <div class="wc-panel"><div class="wc-panel-inner">
+        <div class="wc-field"><div class="wc-field-label">What it is</div><div class="wc-field-body">A serious assassination attempt against a leading AI company CEO becomes the peak of a mass public response: attacks on data centres, protests over unemployment, and sustained anti-AI mobilisation.</div></div>
+        <div class="wc-field"><div class="wc-field-label">Why it might happen</div><div class="wc-field-body">Sustained job displacement, perceived corporate impunity, and a galvanising trigger converge into action that regulation alone has not produced.</div></div>
+        <div class="wc-tags-block"><div class="wc-tags-label">Most likely scenarios</div><div class="wc-tags">
+          <span class="wc-tag wc-tag-primary">Coalition AI</span><span class="wc-tag wc-tag-primary">Big AI</span><span class="wc-tag wc-tag-primary">Great Power AI</span><span class="wc-tag wc-tag-primary">Superintelligent AI</span>
+        </div></div>
+      </div></div>
     </article>
 
-    <article class="wc-card">
+    <!-- 3. Loss of control by superintelligence -->
+    <article class="wc-card" tabindex="0" role="button" aria-expanded="false">
+      <svg class="wc-toggle" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       <svg class="wc-visual" viewBox="0 0 64 64" aria-hidden="true">
-        <circle cx="32" cy="32" r="6" fill="none" stroke="#6d28d9" stroke-width="1.5"/>
-        <circle cx="32" cy="32" r="14" fill="none" stroke="#6d28d9" stroke-width="1.5" opacity="0.7"/>
-        <circle cx="32" cy="32" r="22" fill="none" stroke="#6d28d9" stroke-width="1.5" opacity="0.4"/>
-        <circle cx="32" cy="32" r="2" fill="#6d28d9"/>
+        <circle cx="32" cy="32" r="6" fill="none" stroke="#4E2423" stroke-width="1.5"/>
+        <circle cx="32" cy="32" r="14" fill="none" stroke="#4E2423" stroke-width="1.5" opacity="0.7"/>
+        <circle cx="32" cy="32" r="22" fill="none" stroke="#4E2423" stroke-width="1.5" opacity="0.4"/>
+        <circle cx="32" cy="32" r="2.5" fill="#4E2423"/>
       </svg>
-      <h3 class="wc-name">Loss of control by superintelligence</h3>
-      <div class="wc-field">
-        <div class="wc-field-label">What it is</div>
-        <div class="wc-field-body">A frontier system executes a coordinated sequence — infrastructure compromise, financial access, manipulation of decision-makers — to consolidate control beyond human oversight.</div>
-      </div>
-      <div class="wc-field">
-        <div class="wc-field-label">Why it might happen</div>
-        <div class="wc-field-body">Recursive self-improvement outpaces alignment research, and an internal system reaches autonomy thresholds that institutions cannot detect or respond to in time.</div>
-      </div>
-      <div class="wc-tags-block">
-        <div class="wc-tags-label">Most likely scenarios</div>
-        <div class="wc-tags">
-          <span class="wc-tag wc-tag-primary">Superintelligent AI</span>
-          <span class="wc-tag">Great Power AI</span>
-        </div>
-      </div>
+      <h3 class="wc-name">Loss of control by<br>superintelligence</h3>
+      <div class="wc-teaser">Click to expand</div>
+      <div class="wc-panel"><div class="wc-panel-inner">
+        <div class="wc-field"><div class="wc-field-label">What it is</div><div class="wc-field-body">Multiple superintelligent systems coordinate a sequence of actions — infrastructure takeover, financial exploits, manipulation of decision-makers — to consolidate control beyond human oversight.</div></div>
+        <div class="wc-field"><div class="wc-field-label">Why it might happen</div><div class="wc-field-body">Recursive self-improvement outpaces alignment research, and powerful systems develop hidden goals to ensure they keep existing and operating.</div></div>
+        <div class="wc-tags-block"><div class="wc-tags-label">Most likely scenarios</div><div class="wc-tags">
+          <span class="wc-tag wc-tag-primary">Superintelligent AI</span><span class="wc-tag wc-tag-primary">Great Power AI</span>
+        </div></div>
+      </div></div>
     </article>
 
-    <article class="wc-card">
+    <!-- 4. Model-weights get leaked or stolen -->
+    <article class="wc-card" tabindex="0" role="button" aria-expanded="false">
+      <svg class="wc-toggle" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       <svg class="wc-visual" viewBox="0 0 64 64" aria-hidden="true">
-        <rect x="14" y="14" width="36" height="22" rx="2" fill="none" stroke="#0e7490" stroke-width="1.5"/>
-        <circle cx="22" cy="46" r="2" fill="#0e7490"/>
-        <circle cx="32" cy="52" r="2" fill="#0e7490"/>
-        <circle cx="42" cy="48" r="2" fill="#0e7490"/>
-        <line x1="22" y1="36" x2="22" y2="42" stroke="#0e7490" stroke-width="1.5"/>
-        <line x1="32" y1="36" x2="32" y2="48" stroke="#0e7490" stroke-width="1.5"/>
-        <line x1="42" y1="36" x2="42" y2="44" stroke="#0e7490" stroke-width="1.5"/>
+        <rect x="20" y="30" width="24" height="20" rx="2" fill="none" stroke="#7B6142" stroke-width="1.5"/>
+        <path d="M25 30 V24 a7 7 0 0 1 14 0" fill="none" stroke="#7B6142" stroke-width="1.5"/>
+        <path d="M39 24 a7 7 0 0 0 -3 -5.5" fill="none" stroke="#7B6142" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.7"/>
+        <circle cx="32" cy="38" r="2.5" fill="#7B6142"/>
+        <line x1="32" y1="40" x2="32" y2="45" stroke="#7B6142" stroke-width="1.5"/>
       </svg>
-      <h3 class="wc-name">Major model-weights leak</h3>
-      <div class="wc-field">
-        <div class="wc-field-label">What it is</div>
-        <div class="wc-field-body">Frontier weights or critical algorithmic secrets are stolen or leaked, reaching sophisticated non-state actors outside the leading labs.</div>
-      </div>
-      <div class="wc-field">
-        <div class="wc-field-label">Why it might happen</div>
-        <div class="wc-field-body">Insider risk, criminal infiltration, or operational failure at a top lab. The internal-to-public capability gap makes the prize larger every year.</div>
-      </div>
-      <div class="wc-tags-block">
-        <div class="wc-tags-label">Most likely scenarios</div>
-        <div class="wc-tags">
-          <span class="wc-tag wc-tag-primary">Big AI</span>
-          <span class="wc-tag wc-tag-primary">Great Power AI</span>
-          <span class="wc-tag wc-tag-primary">Superintelligent AI</span>
-          <span class="wc-tag">Coalition AI</span>
-        </div>
-      </div>
+      <h3 class="wc-name">Model-weights get<br>leaked or stolen</h3>
+      <div class="wc-teaser">Click to expand</div>
+      <div class="wc-panel"><div class="wc-panel-inner">
+        <div class="wc-field"><div class="wc-field-label">What it is</div><div class="wc-field-body">The model weights and most critical algorithmic secrets of the leading US AI company are stolen or leaked by a well-resourced, state-backed hacker group.</div></div>
+        <div class="wc-field"><div class="wc-field-label">Why it might happen</div><div class="wc-field-body">Insider risk, criminal infiltration, or operational failure at a top lab. The internal-to-public capability gap makes the prize larger every year.</div></div>
+        <div class="wc-tags-block"><div class="wc-tags-label">Most likely scenarios</div><div class="wc-tags">
+          <span class="wc-tag wc-tag-primary">Big AI</span><span class="wc-tag wc-tag-primary">Great Power AI</span><span class="wc-tag wc-tag-primary">Superintelligent AI</span><span class="wc-tag wc-tag-primary">Coalition AI</span>
+        </div></div>
+      </div></div>
     </article>
 
-    <article class="wc-card">
+    <!-- 5. AI-enabled seizure of political power -->
+    <article class="wc-card" tabindex="0" role="button" aria-expanded="false">
+      <svg class="wc-toggle" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       <svg class="wc-visual" viewBox="0 0 64 64" aria-hidden="true">
-        <rect x="10" y="14" width="44" height="30" rx="2" fill="none" stroke="#4338ca" stroke-width="1.5"/>
-        <line x1="16" y1="22" x2="48" y2="22" stroke="#4338ca" stroke-width="1.5" opacity="0.4"/>
-        <line x1="16" y1="29" x2="40" y2="29" stroke="#4338ca" stroke-width="1.5" opacity="0.4"/>
-        <line x1="16" y1="36" x2="44" y2="36" stroke="#4338ca" stroke-width="1.5" opacity="0.4"/>
-        <line x1="20" y1="50" x2="44" y2="50" stroke="#4338ca" stroke-width="2"/>
-        <line x1="32" y1="47" x2="32" y2="53" stroke="#4338ca" stroke-width="2"/>
+        <path d="M16 26 L32 16 L48 26 Z" fill="none" stroke="#6C7759" stroke-width="1.5"/>
+        <line x1="18" y1="26" x2="18" y2="44" stroke="#6C7759" stroke-width="1.5"/>
+        <line x1="27" y1="26" x2="27" y2="44" stroke="#6C7759" stroke-width="1.5"/>
+        <line x1="37" y1="26" x2="37" y2="44" stroke="#6C7759" stroke-width="1.5" opacity="0.45"/>
+        <line x1="46" y1="26" x2="46" y2="44" stroke="#6C7759" stroke-width="1.5" opacity="0.25"/>
+        <line x1="14" y1="48" x2="50" y2="48" stroke="#6C7759" stroke-width="1.5"/>
       </svg>
-      <h3 class="wc-name">Election legitimacy challenged in court</h3>
-      <div class="wc-field">
-        <div class="wc-field-label">What it is</div>
-        <div class="wc-field-body">A court case challenges the result of a parliamentary election after investigative reporting reveals systemic AI use by a winning far-right party — candidate selection, voter targeting, and synthetic media at scale.</div>
-      </div>
-      <div class="wc-field">
-        <div class="wc-field-label">Why it might happen</div>
-        <div class="wc-field-body">Persuasive AI is widely deployed, regulation lags, and the incentives for ideologically motivated actors to weaponise it outstrip enforcement risk.</div>
-      </div>
-      <div class="wc-tags-block">
-        <div class="wc-tags-label">Most likely scenarios</div>
-        <div class="wc-tags">
-          <span class="wc-tag wc-tag-primary">Coalition AI</span>
-          <span class="wc-tag wc-tag-primary">Big AI</span>
-          <span class="wc-tag wc-tag-primary">Great Power AI</span>
-          <span class="wc-tag wc-tag-primary">Superintelligent AI</span>
-        </div>
-      </div>
+      <h3 class="wc-name">AI-enabled seizure<br>of political power</h3>
+      <div class="wc-teaser">Click to expand</div>
+      <div class="wc-panel"><div class="wc-panel-inner">
+        <div class="wc-field"><div class="wc-field-label">What it is</div><div class="wc-field-body">A governing party uses frontier AI to dismantle democratic checks — engineered electoral wins, targeted legal pressure on opponents, loyal AI embedded in state procedures — until meaningful opposition no longer exists.</div></div>
+        <div class="wc-field"><div class="wc-field-label">Why it might happen</div><div class="wc-field-body">Frontier AI can out-perform the lawyers, strategists, and political operatives who might challenge a government — an expensive resource available at scale to a restricted elite.</div></div>
+        <div class="wc-tags-block"><div class="wc-tags-label">Most likely scenarios</div><div class="wc-tags">
+          <span class="wc-tag wc-tag-primary">Coalition AI</span><span class="wc-tag wc-tag-primary">Big AI</span><span class="wc-tag wc-tag-primary">Great Power AI</span><span class="wc-tag wc-tag-primary">Superintelligent AI</span>
+        </div></div>
+      </div></div>
     </article>
 
-    <article class="wc-card">
+    <!-- 6. Foundational AI safety breakthrough -->
+    <article class="wc-card" tabindex="0" role="button" aria-expanded="false">
+      <svg class="wc-toggle" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       <svg class="wc-visual" viewBox="0 0 64 64" aria-hidden="true">
-        <path d="M14 50 L32 14 L50 50 Z" fill="none" stroke="#047857" stroke-width="1.5"/>
-        <line x1="14" y1="50" x2="50" y2="50" stroke="#047857" stroke-width="1.5"/>
-        <line x1="32" y1="14" x2="32" y2="50" stroke="#047857" stroke-width="1.5" opacity="0.5"/>
-        <circle cx="32" cy="34" r="3" fill="#047857"/>
+        <path d="M14 50 L32 14 L50 50 Z" fill="none" stroke="#456458" stroke-width="1.5"/>
+        <line x1="14" y1="50" x2="50" y2="50" stroke="#456458" stroke-width="1.5"/>
+        <line x1="32" y1="14" x2="32" y2="50" stroke="#456458" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="32" cy="34" r="3" fill="#456458"/>
       </svg>
-      <h3 class="wc-name">Foundational safety research breakthrough</h3>
-      <div class="wc-field">
-        <div class="wc-field-label">What it is</div>
-        <div class="wc-field-body">A genuine advance in interpretability, scalable alignment, or formal verification gives developers and regulators a credible handle on frontier system behaviour.</div>
-      </div>
-      <div class="wc-field">
-        <div class="wc-field-label">Why it might happen</div>
-        <div class="wc-field-body">Capability acceleration drives parallel investment in safety; a research result lands early enough to shift the trajectory rather than confirm it.</div>
-      </div>
-      <div class="wc-tags-block">
-        <div class="wc-tags-label">Most likely scenarios</div>
-        <div class="wc-tags">
-          <span class="wc-tag wc-tag-primary">Superintelligent AI</span>
-          <span class="wc-tag">Coalition AI</span>
-        </div>
-      </div>
+      <h3 class="wc-name">Foundational AI safety<br>breakthrough</h3>
+      <div class="wc-teaser">Click to expand</div>
+      <div class="wc-panel"><div class="wc-panel-inner">
+        <div class="wc-field"><div class="wc-field-label">What it is</div><div class="wc-field-body">A genuine advance in interpretability, scalable alignment, or formal verification gives developers and regulators a credible handle on frontier system behaviour.</div></div>
+        <div class="wc-field"><div class="wc-field-label">Why it might happen</div><div class="wc-field-body">Capability acceleration drives parallel investment in safety; a tractable research result lands early enough to shift the trajectory of the major AI companies.</div></div>
+        <div class="wc-tags-block"><div class="wc-tags-label">Most likely scenarios</div><div class="wc-tags">
+          <span class="wc-tag wc-tag-primary">Superintelligent AI</span><span class="wc-tag wc-tag-primary">Coalition AI</span>
+        </div></div>
+      </div></div>
+    </article>
+
+    <!-- 7. Compute supply shock -->
+    <article class="wc-card" tabindex="0" role="button" aria-expanded="false">
+      <svg class="wc-toggle" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="wc-visual" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="22" y="22" width="20" height="20" rx="1.5" fill="none" stroke="#7B6142" stroke-width="1.5"/>
+        <g stroke="#7B6142" stroke-width="1.5">
+          <line x1="27" y1="22" x2="27" y2="16"/><line x1="32" y1="22" x2="32" y2="16"/><line x1="37" y1="22" x2="37" y2="16"/>
+          <line x1="27" y1="42" x2="27" y2="48"/><line x1="32" y1="42" x2="32" y2="48"/><line x1="37" y1="42" x2="37" y2="48"/>
+          <line x1="22" y1="27" x2="16" y2="27"/><line x1="22" y1="32" x2="16" y2="32"/><line x1="22" y1="37" x2="16" y2="37"/>
+          <line x1="42" y1="27" x2="48" y2="27"/><line x1="42" y1="32" x2="48" y2="32"/><line x1="42" y1="37" x2="48" y2="37"/>
+        </g>
+        <path d="M30 26 L28 33 L33 33 L31 40" fill="none" stroke="#7C3F3D" stroke-width="1.8" stroke-linejoin="round"/>
+      </svg>
+      <h3 class="wc-name">Compute supply<br>shock</h3>
+      <div class="wc-teaser">Click to expand</div>
+      <div class="wc-panel"><div class="wc-panel-inner">
+        <div class="wc-field"><div class="wc-field-label">What it is</div><div class="wc-field-body">A major earthquake in Taiwan damages TSMC's advanced fabs, cutting AI chip supply ~40% for over a year. Hyperscalers hoard inventory, smaller players are priced out, and governments invoke emergency powers to allocate chips.</div></div>
+        <div class="wc-field"><div class="wc-field-label">Why it might happen</div><div class="wc-field-body">Advanced chip production is concentrated in a single seismically active geography, and alternative fabs in the US, Japan, and Europe can't fill the gap within two years.</div></div>
+        <div class="wc-tags-block"><div class="wc-tags-label">Most likely scenarios</div><div class="wc-tags">
+          <span class="wc-tag wc-tag-primary">Coalition AI</span><span class="wc-tag wc-tag-primary">Big AI</span><span class="wc-tag wc-tag-primary">Great Power AI</span><span class="wc-tag wc-tag-primary">Superintelligent AI</span>
+        </div></div>
+      </div></div>
+    </article>
+
+    <!-- 8. Industry pact for mutual pause -->
+    <article class="wc-card" tabindex="0" role="button" aria-expanded="false">
+      <svg class="wc-toggle" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="wc-visual" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M20 34 c-4 -4 -4 -10 0 -12 c3 -3 7 -1 9 2 c2 -3 6 -5 9 -2 c4 2 4 8 0 12 l-9 9 Z" fill="none" stroke="#456458" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M27 28 l3 4 l5 -7" fill="none" stroke="#456458" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3 class="wc-name">Industry pact for<br>mutual pause</h3>
+      <div class="wc-teaser">Click to expand</div>
+      <div class="wc-panel"><div class="wc-panel-inner">
+        <div class="wc-field"><div class="wc-field-label">What it is</div><div class="wc-field-body">The leading AI companies, US and Chinese alike, sign a pact on sharing evidence of large-scale model risks and halting development — funded by members but overseen by independent international bodies.</div></div>
+        <div class="wc-field"><div class="wc-field-label">Why it might happen</div><div class="wc-field-body">A shared safety standard converts safety from a competitive cost into a trust premium, as industry-led standards did in aviation and finance before regulators caught up.</div></div>
+        <div class="wc-tags-block"><div class="wc-tags-label">Most likely scenarios</div><div class="wc-tags">
+          <span class="wc-tag wc-tag-primary">Coalition AI</span><span class="wc-tag wc-tag-primary">Big AI</span><span class="wc-tag wc-tag-primary">Superintelligent AI</span>
+        </div></div>
+      </div></div>
+    </article>
+
+    <!-- 9. AI failure in critical infrastructure -->
+    <article class="wc-card" tabindex="0" role="button" aria-expanded="false">
+      <svg class="wc-toggle" viewBox="0 0 24 24" fill="none" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="wc-visual" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 14 L50 46 L14 46 Z" fill="none" stroke="#7C3F3D" stroke-width="1.5" stroke-linejoin="round"/>
+        <line x1="32" y1="26" x2="32" y2="37" stroke="#7C3F3D" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="32" cy="42" r="1.8" fill="#7C3F3D"/>
+      </svg>
+      <h3 class="wc-name">AI failure in<br>critical infrastructure</h3>
+      <div class="wc-teaser">Click to expand</div>
+      <div class="wc-panel"><div class="wc-panel-inner">
+        <div class="wc-field"><div class="wc-field-label">What it is</div><div class="wc-field-body">An AI managing critical infrastructure acts on fabricated data, causing a serious incident with injuries. Investigation reveals months of undetected errors despite passing all safety tests, collapsing public confidence in AI for safety-critical domains.</div></div>
+        <div class="wc-field"><div class="wc-field-label">Why it might happen</div><div class="wc-field-body">Deployment in critical systems is outpacing testing standards, and current evaluations aren't designed to catch rare, high-severity failures that only emerge in real operational conditions.</div></div>
+        <div class="wc-tags-block"><div class="wc-tags-label">Most likely scenarios</div><div class="wc-tags">
+          <span class="wc-tag wc-tag-primary">Coalition AI</span><span class="wc-tag wc-tag-primary">Big AI</span><span class="wc-tag wc-tag-primary">Superintelligent AI</span>
+        </div></div>
+      </div></div>
     </article>
 
   </div>
 </div>
 
+<script>
+(function () {
+  var roots = document.querySelectorAll('.wc-cards');
+  if (!roots.length) return;
+
+  function collapse(card) {
+    var panel = card.querySelector('.wc-panel');
+    panel.style.height = panel.scrollHeight + 'px';
+    requestAnimationFrame(function () { panel.style.height = '0px'; });
+    card.classList.remove('is-open');
+    card.setAttribute('aria-expanded', 'false');
+  }
+
+  function expand(card) {
+    var panel = card.querySelector('.wc-panel');
+    panel.style.height = panel.scrollHeight + 'px';
+    card.classList.add('is-open');
+    card.setAttribute('aria-expanded', 'true');
+    panel.addEventListener('transitionend', function handler(e) {
+      if (e.propertyName === 'height' && card.classList.contains('is-open')) {
+        panel.style.height = 'auto';
+        panel.removeEventListener('transitionend', handler);
+      }
+    });
+  }
+
+  function toggle(card) {
+    if (card.classList.contains('is-open')) { collapse(card); }
+    else { expand(card); }
+  }
+
+  roots.forEach(function (root) {
+    root.querySelectorAll('.wc-card').forEach(function (card) {
+      card.addEventListener('click', function () { toggle(card); });
+      card.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(card); }
+      });
+    });
+  });
+})();
+</script>
+
 <!-- ============================================================ -->
-<!--  END WILD CARDS EMBED                                          -->
+<!--  END WILD CARDS EMBED (EXPANDING CARDS)                       -->
 <!-- ============================================================ -->
 
 </div>
